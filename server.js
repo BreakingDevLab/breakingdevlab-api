@@ -62,12 +62,17 @@ async function handleForm(req, res, opts) {
     const text = `New submission\n\nName: ${payload.name}\nContact: ${payload.contact}\nService: ${payload.selected_service}\n\nMessage:\n${payload.message}`;
 
     if (transporter) {
-      await transporter.sendMail({
-        from: `"Breaking Dev Lab" <${process.env.SMTP_FROM || TO_EMAIL}>`,
-        to: TO_EMAIL,
-        subject,
-        text
-      });
+      try {
+        await transporter.sendMail({
+          from: `"Breaking Dev Lab" <${process.env.SMTP_FROM || TO_EMAIL}>`,
+          to: TO_EMAIL,
+          subject,
+          text
+        });
+      } catch (mailErr) {
+        console.error('Mail send failed:', mailErr);
+        // continue — do not fail the whole request because email couldn't be sent
+      }
     } else {
       console.log('Email not sent (no SMTP configured). Payload:\n', text);
     }
